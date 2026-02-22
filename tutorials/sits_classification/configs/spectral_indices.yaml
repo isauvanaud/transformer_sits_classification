@@ -1,0 +1,42 @@
+# Data
+data_folder: your/path/to/data
+n_channels: 10
+n_pixels: 64
+pad_value: 0
+max_len: 24
+
+# Training
+epochs: 15
+batch_size: 64
+lr: 1e-3
+device: cuda
+val_split: 0.2
+
+# Model
+d_model: 64
+d_inner: 64
+n_layers: 6
+n_head: 8
+d_k: 64
+d_v: 64
+dropout: 0
+scale_emb_or_prj: prj
+pos_embedding:
+  n_position: 365
+  T: 1000
+return_attns: False
+classifier:
+  d_inner: 128
+learnable_query: True
+loss:
+  gamma: 1
+spectral_indices: True
+channels:
+  blue: 1
+  red: 2
+  near_infrared: 6
+  swir1: 8
+compute_values: False
+  
+# Results folder
+res_dir: your/path/to/results
