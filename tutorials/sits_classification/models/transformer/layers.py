@@ -43,7 +43,7 @@ class NDVI(nn.Module):
         NIR = x[:,:,self.near_infrared,:]
         RED = x[:,:,self.red,:]
         ndvi = (NIR - RED )/(NIR + RED + self.eps) #adding eps to avoid dividing by zero
-        print("shape ndvi :",ndvi.shape)
+        #print("shape ndvi :",ndvi.shape)
         return ndvi
 
         
@@ -72,37 +72,28 @@ class BI(nn.Module):
         NIR = x[:,:,self.near_infrared,:]
         BLUE = x[:,:,self.blue,:]
         BI = ((SWIR1 + RED) - (NIR + BLUE)) / ((SWIR1 + RED) + (NIR + BLUE) + self.eps)
-        print("BI shape: ",BI.shape)
+        #print("BI shape: ",BI.shape)
         return BI
     
 
+
 class SpectralIndicesLayer(nn.Module):
     ''' compute features based on NDVI and BI time series from raw pixel set data.
-    '''
+'''
 
-    def __init__(self, d_model, blue=1, red=2, near_infrared=6, swir1=8, eps=1e-3):
+    def __init__(self, d_model, n_pixels, blue=1, red=2, near_infrared=6, swir1=8, eps=1e-3):
         super(SpectralIndicesLayer, self).__init__()
         self.d_model = d_model
         self.ndvi = NDVI(red, near_infrared, eps)
         self.bi = BI(blue, red, near_infrared, swir1, eps)
+        self.embed_indices_ndvi = EmbeddingLayer(n_channels=1, n_pixels=n_pixels, d_model=d_model)
+        self.embed_indices_bi = EmbeddingLayer(n_channels=1, n_pixels=n_pixels, d_model=d_model)
         self.mlp = nn.Linear(2 * d_model, d_model)
         self.layer_norm = nn.LayerNorm(d_model, eps=1e-6)
 
     def forward(self, x):
-        """
-        Args:
-            x (torch.Tensor): batch_size x len_seq x n_channels x n_pixels data
-        """
-        n_pixels = x.shape[3]
-        d_model = self.d_model
-
-        # Instanciation of Embedding for embed_indices
-        embed_indices_function = EmbeddingLayer(n_channels=1, n_pixels=n_pixels, d_model=d_model)
-        # Indices data go through their respective Embedding
-        embed_ndvi = embed_indices_function(self.ndvi(x))
-        embed_bi = embed_indices_function(self.bi(x))
-
-        # Concatenation of embed_raw and embed_indices
+        embed_ndvi = self.embed_indices_ndvi(self.ndvi(x).unsqueeze(2))   # [B,T,P] -> [B,T,1,P]
+        embed_bi   = self.embed_indices_bi(self.bi(x).unsqueeze(2))     # [B,T,P] -> [B,T,1,P]
         indices = torch.concat((embed_ndvi, embed_bi), dim=2)
         
         return self.layer_norm(self.mlp(indices))

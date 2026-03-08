@@ -24,7 +24,7 @@ scale_emb_or_prj: prj
 pos_embedding:
   n_position: 365
   T: 1000
-return_attns: True # False à remettre
+return_attns: False # False à remettre
 classifier:
   d_inner: 128
 learnable_query: False

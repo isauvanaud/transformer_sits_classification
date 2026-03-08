@@ -59,7 +59,7 @@ class Transformer(nn.Module):
         self.learnable_query = learnable_query
         
         if spectral_indices_embedding:
-            self.embedding = SpectralIndicesLayer(d_model, **channels)
+            self.embedding = SpectralIndicesLayer(d_model, n_pixels=n_pixels, **channels)
         else:
             self.embedding = EmbeddingLayer(n_channels, n_pixels, d_model)
 

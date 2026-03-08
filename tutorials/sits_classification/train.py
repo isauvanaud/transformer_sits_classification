@@ -65,11 +65,11 @@ def main(cfg, yaml_path=None,model_path=None):
     )
 
     input_shape = (1, cfg['max_len'], cfg['n_channels'], cfg['n_pixels'])
-    # flops = get_flops(encoder, input_shape)
+    flops = get_flops(encoder, input_shape)
     params = get_params(encoder)
 
     print("Total number of parameters: {:.2f}M".format(params / 10**6))
-    #print("Total number of FLOPs: {:.2f}M".format(flops / 10**6))
+    print("Total number of FLOPs: {:.2f}M".format(flops / 10**6))
 
     classifier = ShallowClassifier(
         d_input=cfg['d_model'],
